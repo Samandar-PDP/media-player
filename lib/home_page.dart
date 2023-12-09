@@ -13,15 +13,15 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   late AudioPlayer _audioPlayer;
   Duration maxDuration = const Duration(seconds: 0);
   late ValueListenable<Duration> progress;
   int _index = 0;
-  final _musicList = [
-    'dvrs',
-    'interworld',
-    'braz'
+  final _musicList = ['dvrs', 'interworld', 'braz'];
+  final _names = [
+    'Close eyes',
+    'Metamorphosis',
+    'Brazil Phonk',
   ];
 
   @override
@@ -55,8 +55,13 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Lottie.asset('assets/anim/anim_1.json',height: 250,width: 250, animate: _audioPlayer.state == PlayerState.playing),
+              Lottie.asset('assets/anim/anim_1.json',
+                  height: 250,
+                  width: 250,
+                  animate: _audioPlayer.state == PlayerState.playing),
               const SizedBox(height: 150),
+              Text(_names[_index],style: const TextStyle(fontSize: 20,color: Colors.white),),
+              const SizedBox(height: 20),
               StreamBuilder(
                   stream: _audioPlayer.onPositionChanged,
                   builder: (context, snapshot) {
@@ -75,29 +80,45 @@ class _HomePageState extends State<HomePage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  IconButton(onPressed: () {
-                    if(_index > 0) {
-                      setState(() {
-                        _index--;
-                      });
-                    }
-                    _playOrStop();
-                  }, icon: const Icon(CupertinoIcons.backward_end_alt),color: Colors.white,),
+                  IconButton(
+                    onPressed: () {
+                      if (_index > 0) {
+                        setState(() {
+                          _index--;
+                        });
+                        _audioPlayer.play(
+                            AssetSource('audio/${_musicList[_index]}.mp3'));
+                      }
+                    },
+                    icon: const Icon(CupertinoIcons.backward_end_alt),
+                    color: Colors.white,
+                  ),
                   Container(
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white,width: 2)
-                    ),
-                    child: IconButton(onPressed: _playOrStop, icon: Icon(_audioPlayer.state == PlayerState.playing ? CupertinoIcons.pause : CupertinoIcons.play,color: Colors.white)),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2)),
+                    child: IconButton(
+                        onPressed: _playOrStop,
+                        icon: Icon(
+                            _audioPlayer.state == PlayerState.playing
+                                ? CupertinoIcons.pause
+                                : CupertinoIcons.play,
+                            color: Colors.white)),
                   ),
-                  IconButton(onPressed: () {
-                    if(_index < _musicList.length) {
-                      setState(() {
-                        _index++;
-                      });
-                    _playOrStop();
-                    }
-                  }, icon: const Icon(CupertinoIcons.forward_end_alt),color: Colors.white,),
+                  IconButton(
+                    onPressed: () {
+                      if (_index < _musicList.length -1) {
+                        setState(() {
+                          _index++;
+                        });
+                        //_audioPlayer.release();
+                        _audioPlayer.play(
+                            AssetSource('audio/${_musicList[_index]}.mp3'));
+                      }
+                    },
+                    icon: const Icon(CupertinoIcons.forward_end_alt),
+                    color: Colors.white,
+                  ),
                 ],
               )
             ],
@@ -107,15 +128,16 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
-
   void _playOrStop() async {
-    print(_index);
-    if(_audioPlayer.state == PlayerState.playing) {
+    if (_audioPlayer.state == PlayerState.playing) {
       await _audioPlayer.pause();
     } else {
       await _audioPlayer.play(AssetSource('audio/${_musicList[_index]}.mp3'));
     }
+    setState(() {});
+  }
+  void _playNetwork() async {
+    _audioPlayer.play(UrlSource('https://file-examples.com/storage/fe625b599465730b594836d/2017/11/file_example_MP3_700KB.mp3'));
     setState(() {});
   }
 }
